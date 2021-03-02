@@ -14,7 +14,7 @@ module SessionsHelper
   def current_user
     if (user_id = session[:user_id])
       @user = User.find_by(id: user_id)
-      if @user && session[:session_token] == @user.remember_digest
+      if @user && session[:session_token] == @user.session_token
         @current_user = @user
       end
     elsif (user_id = cookies.encrypted[:user_id])
@@ -31,6 +31,11 @@ module SessionsHelper
     !current_user.nil?
   end
   
+  def current_user?(user)
+    user && user == current_user
+  end
+
+  
   def forget(user)
     user.forget
     cookies.delete(:user_id)
@@ -41,6 +46,10 @@ module SessionsHelper
     forget(current_user)
     reset_session
     @current_user = nil
+  end
+  
+  def store_location
+    session[:forwarding_url] = request.original_url if request.get?
   end
   
 end
